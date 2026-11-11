@@ -1,13 +1,32 @@
 """The catalogue of test types and the test cases inside each type."""
 
+
+def case(case_id, title, description, scenario, steps, expected, severity="Medium"):
+    return {
+        "id": case_id,
+        "title": title,
+        "description": description,
+        "scenario": scenario,
+        "steps": steps,
+        "expected": expected,
+        "severity": severity,
+    }
+
+
 CATALOG = [
     {
         "id": "links",
         "name": "Links and images",
         "description": "Finds broken links and images.",
         "cases": [
-            {"id": "LNK-01", "title": "All links respond", "description": "Every link on the page returns a non-error status."},
-            {"id": "LNK-02", "title": "All images load", "description": "Every image on the page loads successfully."},
+            case("LNK-01", "All links respond", "Verify that links on the page are not broken.",
+                 "A visitor clicks any link on the page.",
+                 "1. Open the page.\n2. Collect unique http(s) links (first 30).\n3. Request each link.",
+                 "Every link answers with a status below 400.", "High"),
+            case("LNK-02", "All images load", "Verify that images on the page are displayed.",
+                 "A visitor views the images on the page.",
+                 "1. Open the page and scroll to the bottom.\n2. Inspect every image element.",
+                 "Every image loads and has a non-zero width."),
         ],
     },
     {
@@ -15,9 +34,18 @@ CATALOG = [
         "name": "Accessibility basics",
         "description": "Checks simple rules that help all users, including screen-reader users.",
         "cases": [
-            {"id": "ACC-01", "title": "Images have alt text", "description": "Every image has an alt attribute."},
-            {"id": "ACC-02", "title": "Form fields have labels", "description": "Every input has a label or aria-label."},
-            {"id": "ACC-03", "title": "Page language is set", "description": "The html tag has a lang attribute."},
+            case("ACC-01", "Images have alt text", "Verify every image has an alt attribute.",
+                 "A screen-reader user reads the page.",
+                 "1. Open the page.\n2. Find all img elements.\n3. Check each for an alt attribute.",
+                 "Every image has an alt attribute (empty alt is fine for decorative images)."),
+            case("ACC-02", "Form fields have labels", "Verify every form field has a label.",
+                 "A screen-reader user fills in a form.",
+                 "1. Open the page.\n2. Find all input, select and textarea fields.\n3. Check each for a label.",
+                 "Every visible form field has a label, aria-label or title.", "High"),
+            case("ACC-03", "Page language is set", "Verify the html tag declares a language.",
+                 "A screen reader chooses the pronunciation for the page.",
+                 "1. Open the page.\n2. Read the lang attribute of the html tag.",
+                 "The lang attribute exists and is not empty."),
         ],
     },
     {
@@ -25,17 +53,29 @@ CATALOG = [
         "name": "SEO basics",
         "description": "Checks what search engines look for.",
         "cases": [
-            {"id": "SEO-01", "title": "Page has a title", "description": "The title tag exists and is not empty."},
-            {"id": "SEO-02", "title": "Meta description present", "description": "A meta description tag exists."},
-            {"id": "SEO-03", "title": "Exactly one H1", "description": "The page has one h1 heading."},
+            case("SEO-01", "Page has a title", "Verify the page has a non-empty title.",
+                 "A search engine or browser tab shows the page title.",
+                 "1. Open the page.\n2. Read the title tag.",
+                 "A non-empty title exists."),
+            case("SEO-02", "Meta description present", "Verify a meta description exists.",
+                 "A search engine shows a summary of the page.",
+                 "1. Open the page.\n2. Look for meta name=description.",
+                 "A non-empty meta description exists.", "Low"),
+            case("SEO-03", "Exactly one H1", "Verify the page has one main heading.",
+                 "A search engine or screen reader finds the main heading.",
+                 "1. Open the page.\n2. Count h1 elements.",
+                 "Exactly one h1 element exists.", "Low"),
         ],
     },
     {
         "id": "spelling",
         "name": "Spelling and content",
-        "description": "Checks visible text for spelling mistakes, without any outside service.",
+        "description": "Checks visible text for spelling mistakes, using an offline dictionary.",
         "cases": [
-            {"id": "SPL-01", "title": "No spelling mistakes", "description": "Visible words are found in an offline dictionary."},
+            case("SPL-01", "No spelling mistakes", "Verify visible English words are spelled correctly.",
+                 "A visitor reads the text on the page.",
+                 "1. Open the page.\n2. Read the visible text.\n3. Compare lowercase words with an offline dictionary.",
+                 "No unknown words are found. Unknown words are listed for manual review.", "Low"),
         ],
     },
     {
@@ -43,8 +83,14 @@ CATALOG = [
         "name": "Security headers and HTTPS",
         "description": "Checks basic security settings of the site.",
         "cases": [
-            {"id": "SEC-01", "title": "Uses HTTPS", "description": "The page is served over HTTPS."},
-            {"id": "SEC-02", "title": "Security headers present", "description": "Headers such as Content-Security-Policy and X-Content-Type-Options exist."},
+            case("SEC-01", "Uses HTTPS", "Verify the page is served over HTTPS.",
+                 "A visitor sends data to the site over the internet.",
+                 "1. Open the URL.\n2. Read the final address after redirects.",
+                 "The final address starts with https://.", "High"),
+            case("SEC-02", "Security headers present", "Verify common security response headers exist.",
+                 "A browser decides how strictly to protect the visitor.",
+                 "1. Open the URL.\n2. Read the response headers of the main page.",
+                 "Content-Security-Policy, X-Content-Type-Options, Referrer-Policy, clickjacking protection and (on HTTPS) Strict-Transport-Security are present.", "Medium"),
         ],
     },
     {
@@ -52,8 +98,14 @@ CATALOG = [
         "name": "Performance",
         "description": "Measures how fast and heavy the page is.",
         "cases": [
-            {"id": "PRF-01", "title": "Page loads in time", "description": "Load time is under the allowed limit."},
-            {"id": "PRF-02", "title": "Page size is reasonable", "description": "Total downloaded size is under the allowed limit."},
+            case("PRF-01", "Page loads in time", "Verify the page load time is acceptable.",
+                 "A visitor waits for the page to load.",
+                 "1. Start a timer.\n2. Open the URL and wait for the load event.\n3. Stop the timer.",
+                 "Load time is under 3 seconds (warning up to 6 seconds).", "Medium"),
+            case("PRF-02", "Page size is reasonable", "Verify the total download size is acceptable.",
+                 "A visitor on a slow connection loads the page.",
+                 "1. Open the URL.\n2. Add up the size of every downloaded file.",
+                 "Total download is under 3 MB (warning up to 6 MB).", "Low"),
         ],
     },
     {
@@ -61,8 +113,14 @@ CATALOG = [
         "name": "Responsive layout",
         "description": "Checks the page at mobile, tablet and desktop sizes.",
         "cases": [
-            {"id": "RSP-01", "title": "No sideways scrolling on mobile", "description": "At phone width the page does not scroll horizontally."},
-            {"id": "RSP-02", "title": "Screenshots captured", "description": "Screenshots are saved at three screen sizes."},
+            case("RSP-01", "No sideways scrolling on mobile", "Verify the page fits a phone screen.",
+                 "A visitor opens the page on a 375 px wide phone.",
+                 "1. Set the browser width to 375 px.\n2. Compare page width with screen width.",
+                 "The page is not wider than the screen.", "Medium"),
+            case("RSP-02", "Screenshots captured", "Capture evidence at three screen sizes.",
+                 "A tester reviews the layout at mobile, tablet and desktop sizes.",
+                 "1. Set the width to 375, 768 and 1366 px.\n2. Take a screenshot at each size.",
+                 "Three screenshots are saved.", "Low"),
         ],
     },
     {
@@ -70,8 +128,14 @@ CATALOG = [
         "name": "Browser health",
         "description": "Looks for errors the browser reports while loading.",
         "cases": [
-            {"id": "BRW-01", "title": "No JavaScript console errors", "description": "The browser console shows no errors."},
-            {"id": "BRW-02", "title": "No failed network calls", "description": "No request fails while loading the page."},
+            case("BRW-01", "No JavaScript console errors", "Verify the page loads without script errors.",
+                 "A developer opens the browser console.",
+                 "1. Open the page.\n2. Record console errors and uncaught exceptions.",
+                 "No console errors are reported.", "High"),
+            case("BRW-02", "No failed network calls", "Verify every file the page requests loads.",
+                 "The page loads all its scripts, styles and data.",
+                 "1. Open the page.\n2. Record failed requests and responses with status 400 or higher.",
+                 "No request fails and none returns status 400 or higher.", "High"),
         ],
     },
 ]

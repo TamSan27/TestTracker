@@ -9,26 +9,16 @@
 <body>
   <main>
     <h1>Test Case Tracker</h1>
-    <p class="muted">Enter a website URL, choose the types of testing, and run.</p>
+    <p class="muted">Enter a website URL (or upload an HTML file), choose the types of testing, and run.</p>
 
-    {% if selection %}
-    <section class="card">
-      <h2>Your selection</h2>
-      <p><strong>URL:</strong> {{ selection.url }}</p>
-      {% if selection.tests %}
-      <ul>
-        {% for t in selection.tests %}<li>{{ t.name }} ({{ t.cases|length }} test cases)</li>{% endfor %}
-      </ul>
-      {% else %}
-      <p>No test types selected.</p>
-      {% endif %}
-      <p class="muted">Step A: selection received. Running the tests is added in Step B.</p>
-    </section>
-    {% endif %}
+    {% if error %}<div class="alert" role="alert">{{ error }}</div>{% endif %}
 
-    <form method="post" action="/run">
+    <form id="run-form" method="post" action="/run" enctype="multipart/form-data">
       <label for="url">Website URL</label>
-      <input id="url" name="url" type="url" placeholder="https://example.com" required>
+      <input id="url" name="url" type="text" value="{{ url }}" placeholder="https://example.com">
+
+      <label for="html_file">Or upload an HTML file</label>
+      <input id="html_file" name="html_file" type="file" accept=".html,.htm,text/html">
 
       <h2>Choose test types</h2>
       {% for t in catalog %}
@@ -44,9 +34,34 @@
       </div>
       {% endfor %}
 
-      <button type="submit">Run tests</button>
+      <button id="run-btn" type="submit">Run tests</button>
     </form>
+
+    {% if runs %}
+    <h2>Recent runs</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Run</th><th>Target</th><th>Status</th><th>Started (UTC)</th></tr></thead>
+        <tbody>
+          {% for r in runs %}
+          <tr>
+            <td><a href="/runs/{{ r.id }}">RUN-{{ '%04d' % r.id }}</a></td>
+            <td>{{ r.target }}</td><td>{{ r.status }}</td><td>{{ r.created_at }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
     <footer class="muted">Environment: {{ env }}</footer>
   </main>
+  <script>
+    document.getElementById('run-form').addEventListener('submit', function () {
+      var b = document.getElementById('run-btn');
+      b.disabled = true;
+      b.textContent = 'Running tests... this can take up to a minute';
+    });
+  </script>
 </body>
 </html>

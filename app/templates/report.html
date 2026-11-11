@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ run.display_id }} - Test Report</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="wide">
+    <p><a href="/">&larr; New test run</a></p>
+    <h1>Test Report {{ run.display_id }}</h1>
+
+    {% if run.error %}<div class="alert" role="alert">{{ run.error }}</div>{% endif %}
+
+    <section class="card">
+      <h2>Test plan details</h2>
+      <table class="plain">
+        <tr><th>Run ID</th><td>{{ run.display_id }}</td></tr>
+        <tr><th>Application under test</th><td>{{ run.target }} ({{ 'uploaded HTML file' if run.mode == 'html' else 'URL' }})</td></tr>
+        <tr><th>Test types</th><td>{{ run.type_names|join(', ') }}</td></tr>
+        <tr><th>Browser</th><td>{{ run.browser or 'n/a' }}</td></tr>
+        <tr><th>Executed (UTC)</th><td>{{ run.created_at }}</td></tr>
+        <tr><th>Duration</th><td>{{ '%.1f'|format(run.duration_ms / 1000) }} seconds</td></tr>
+        <tr><th>Status</th><td>{{ run.status }}</td></tr>
+      </table>
+    </section>
+
+    <section class="summary">
+      <div class="stat"><span>{{ total }}</span>Total</div>
+      <div class="stat s-pass"><span>{{ counts['Pass'] }}</span>Pass</div>
+      <div class="stat s-fail"><span>{{ counts['Fail'] }}</span>Fail</div>
+      <div class="stat s-warning"><span>{{ counts['Warning'] }}</span>Warning</div>
+      <div class="stat s-skipped"><span>{{ counts['Skipped'] }}</span>Skipped</div>
+      <div class="stat s-error"><span>{{ counts['Error'] }}</span>Error</div>
+      <div class="stat"><span>{{ pass_rate }}%</span>Pass rate</div>
+    </section>
+
+    <p><a class="button" href="/runs/{{ run.id }}/csv">Download CSV</a></p>
+
+    <div class="scroll">
+      <table class="results">
+        <thead>
+          <tr>
+            <th>Test Case ID</th><th>Test Type</th><th>Description</th><th>Test Scenario</th>
+            <th>Test Steps</th><th>Expected Result</th><th>Actual Result</th><th>Status</th>
+            <th>Severity</th><th>Duration</th><th>Evidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in results %}
+          <tr>
+            <td><code>{{ r.case_id }}</code></td>
+            <td>{{ r.test_type }}</td>
+            <td><strong>{{ r.title }}</strong><br>{{ r.description }}</td>
+            <td>{{ r.scenario }}</td>
+            <td class="pre">{{ r.steps }}</td>
+            <td>{{ r.expected }}</td>
+            <td>{{ r.actual }}</td>
+            <td><span class="badge b-{{ r.status|lower }}">{{ r.status }}</span></td>
+            <td>{{ r.severity }}</td>
+            <td>{{ r.duration_ms }} ms</td>
+            <td>
+              {{ r.evidence }}
+              {% for a in r.attachments %}
+              <br><a href="/runs/{{ run.id }}/screenshots/{{ a }}" target="_blank">{{ a }}</a>
+              {% endfor %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>
