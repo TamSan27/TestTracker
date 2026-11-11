@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test Case Tracker</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main>
+    <h1>Test Case Tracker</h1>
+    <p class="muted">Enter a website URL, choose the types of testing, and run.</p>
+
+    {% if selection %}
+    <section class="card">
+      <h2>Your selection</h2>
+      <p><strong>URL:</strong> {{ selection.url }}</p>
+      {% if selection.tests %}
+      <ul>
+        {% for t in selection.tests %}<li>{{ t.name }} ({{ t.cases|length }} test cases)</li>{% endfor %}
+      </ul>
+      {% else %}
+      <p>No test types selected.</p>
+      {% endif %}
+      <p class="muted">Step A: selection received. Running the tests is added in Step B.</p>
+    </section>
+    {% endif %}
+
+    <form method="post" action="/run">
+      <label for="url">Website URL</label>
+      <input id="url" name="url" type="url" placeholder="https://example.com" required>
+
+      <h2>Choose test types</h2>
+      {% for t in catalog %}
+      <div class="card">
+        <label class="check">
+          <input type="checkbox" name="tests" value="{{ t.id }}" checked>
+          <strong>{{ t.name }}</strong>
+        </label>
+        <p class="muted">{{ t.description }}</p>
+        <ul>
+          {% for c in t.cases %}<li><code>{{ c.id }}</code> {{ c.title }}</li>{% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
+
+      <button type="submit">Run tests</button>
+    </form>
+    <footer class="muted">Environment: {{ env }}</footer>
+  </main>
+</body>
+</html>
